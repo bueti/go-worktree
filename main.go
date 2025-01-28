@@ -158,8 +158,21 @@ func (wm *WorktreeManager) branchInList(branchName string, output []byte) bool {
 	return false
 }
 
+func (wm *WorktreeManager) isGitDirectory() bool {
+	cmd := exec.Command("git", "rev-parse", "--git-dir")
+	if err := cmd.Run(); err != nil {
+		return false
+	}
+	return true
+}
+
 // CreateWorktree creates a new git worktree
 func (wm *WorktreeManager) CreateWorktree(branchName string) error {
+	// Check if current directory is a git repository
+	if !wm.isGitDirectory() {
+		return fmt.Errorf("current directory is not a git repository")
+	}
+
 	// Replace slashes with underscores
 	dirName := strings.ReplaceAll(branchName, "/", "_")
 
