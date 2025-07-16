@@ -20,10 +20,10 @@ func (fc *FileCopier) copyNodeModulesAsync(worktreePath string) error {
 
 	go func() {
 		destPath := filepath.Join(worktreePath, "node_modules")
-		warn("copying node_modules in the background")
+		fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled("copying node_modules in the background"))
 
 		if err := fc.copyWithCOW("node_modules", destPath); err != nil {
-			warn(fmt.Sprintf("Failed to copy node_modules: %v", err))
+			fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled(fmt.Sprintf("Failed to copy node_modules: %v", err)))
 		}
 	}()
 
@@ -40,7 +40,7 @@ func (fc *FileCopier) copyUntrackedFiles(worktreePath string) error {
 	for _, file := range files {
 		destPath := filepath.Join(worktreePath, file)
 		if err := fc.copyWithCOW(file, destPath); err != nil {
-			warn(fmt.Sprintf("Unable to copy file %s to %s - folder may not exist", file, destPath))
+			fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled(fmt.Sprintf("Unable to copy file %s to %s - folder may not exist", file, destPath)))
 		}
 	}
 

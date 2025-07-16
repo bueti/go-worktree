@@ -58,7 +58,8 @@ func main() {
 	manager := &WorktreeManager{config: config}
 
 	if err := manager.CreateWorktree(ctx, args[0]); err != nil {
-		die(err.Error())
+		fmt.Fprintf(os.Stderr, "%s\n", red.Styled(err.Error()))
+		os.Exit(1)
 	}
 }
 
@@ -84,14 +85,7 @@ completely, so add all files you want copied.
 `)
 }
 
-func die(msg string) {
-	fmt.Printf("%s\n", red.Styled(msg))
-	os.Exit(1)
-}
 
-func warn(msg string) {
-	fmt.Printf("%s\n", yellow.Styled(msg))
-}
 
 func (wm *WorktreeManager) CreateWorktree(ctx context.Context, branchname string) error {
 	repo, err := wm.initGitRepo()
@@ -108,7 +102,7 @@ func (wm *WorktreeManager) CreateWorktree(ctx context.Context, branchname string
 		if strings.Contains(errStr, "no upstream") {
 			// Silent for no upstream - this is common and expected
 		} else if wm.config.verbose {
-			warn(fmt.Sprintf("Unable to pull: %v", err))
+			fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled(fmt.Sprintf("Unable to pull: %v", err)))
 		}
 	}
 
@@ -123,7 +117,7 @@ func (wm *WorktreeManager) CreateWorktree(ctx context.Context, branchname string
 	}
 
 	if err := fileCopier.copyUntrackedFiles(worktreePath); err != nil {
-		warn(fmt.Sprintf("Error copying untracked files: %v", err))
+		fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled(fmt.Sprintf("Error copying untracked files: %v", err)))
 	}
 
 	if err := wm.setupDirenv(worktreePath); err != nil {
