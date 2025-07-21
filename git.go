@@ -82,14 +82,7 @@ func (r *GitRepo) createWorktree(ctx context.Context, branchname, worktreePath s
 	var ref plumbing.ReferenceName
 	var hash plumbing.Hash
 
-	if r.branchExistsLocally(branchname) {
-		ref = plumbing.NewBranchReferenceName(branchname)
-		branchRef, err := r.repository.Reference(ref, true)
-		if err != nil {
-			return fmt.Errorf("failed to get local branch reference: %w", err)
-		}
-		hash = branchRef.Hash()
-	} else if r.branchExistsOnRemote(branchname) {
+	if r.branchExistsOnRemote(branchname) {
 		remoteRef := plumbing.NewRemoteReferenceName("origin", branchname)
 		branchRef, err := r.repository.Reference(remoteRef, true)
 		if err != nil {
@@ -130,16 +123,6 @@ func (r *GitRepo) createWorktree(ctx context.Context, branchname, worktreePath s
 	return cmd.Run()
 }
 
-func (r *GitRepo) createBranch(branchname string) error {
-	head, err := r.repository.Head()
-	if err != nil {
-		return fmt.Errorf("failed to get HEAD: %w", err)
-	}
-
-	ref := plumbing.NewHashReference(plumbing.NewBranchReferenceName(branchname), head.Hash())
-	return r.repository.Storer.SetReference(ref)
-}
-
 func (r *GitRepo) getProgressWriter() *os.File {
 	if r.config.verbose {
 		return os.Stdout
@@ -147,15 +130,8 @@ func (r *GitRepo) getProgressWriter() *os.File {
 	return nil
 }
 
-func (r *GitRepo) branchExistsLocally(branchname string) bool {
-	branchRef := plumbing.NewBranchReferenceName(branchname)
-	_, err := r.repository.Reference(branchRef, true)
-	return err == nil
-}
-
 func (r *GitRepo) branchExistsOnRemote(branchname string) bool {
 	remoteRef := plumbing.NewRemoteReferenceName("origin", branchname)
 	_, err := r.repository.Reference(remoteRef, true)
 	return err == nil
 }
-

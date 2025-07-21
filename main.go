@@ -85,8 +85,6 @@ completely, so add all files you want copied.
 `)
 }
 
-
-
 func (wm *WorktreeManager) CreateWorktree(ctx context.Context, branchname string) error {
 	repo, err := wm.initGitRepo()
 	if err != nil {
@@ -111,10 +109,6 @@ func (wm *WorktreeManager) CreateWorktree(ctx context.Context, branchname string
 	}
 
 	fileCopier := &FileCopier{config: wm.config}
-
-	if err := fileCopier.copyNodeModulesAsync(worktreePath); err != nil {
-		wm.config.logger.Printf("Error copying node_modules: %v", err)
-	}
 
 	if err := fileCopier.copyUntrackedFiles(worktreePath); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled(fmt.Sprintf("Error copying untracked files: %v", err)))

@@ -13,23 +13,6 @@ type FileCopier struct {
 	config *Config
 }
 
-func (fc *FileCopier) copyNodeModulesAsync(worktreePath string) error {
-	if _, err := os.Stat("node_modules"); os.IsNotExist(err) {
-		return nil
-	}
-
-	go func() {
-		destPath := filepath.Join(worktreePath, "node_modules")
-		fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled("copying node_modules in the background"))
-
-		if err := fc.copyWithCOW("node_modules", destPath); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", yellow.Styled(fmt.Sprintf("Failed to copy node_modules: %v", err)))
-		}
-	}()
-
-	return nil
-}
-
 func (fc *FileCopier) copyUntrackedFiles(worktreePath string) error {
 	pattern := fc.getUntrackedFilesPattern()
 	files, err := fc.findFiles(pattern)
@@ -141,4 +124,3 @@ func hasCommand(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil
 }
-
