@@ -79,7 +79,7 @@ func (fc *FileCopier) findFiles(pattern string) ([]string, error) {
 func (fc *FileCopier) findFilesWithFd(pattern string) ([]string, error) {
 	// Use fd to find files matching the pattern
 	cmd := exec.Command("fd", "-u", pattern)
-	if !fc.config.excludeNodeModules {
+	if fc.config.excludeNodeModules {
 		// Add node_modules to exclusion list
 		cmd = exec.Command("fd", "-u", pattern, "-E", "node_modules")
 	}
@@ -108,8 +108,8 @@ func (fc *FileCopier) findFilesWithWalk(re *regexp.Regexp) ([]string, error) {
 			return filepath.SkipDir
 		}
 
-		// Special handling for large directories like node_modules
-		if info.IsDir() && strings.Contains(path, "node_modules") {
+		// Special handling for large directories like node_modules when not excluding them
+		if info.IsDir() && strings.Contains(path, "node_modules") && !fc.config.excludeNodeModules {
 			// Instead of walking through all files, just add the directory itself
 			// The copy function will handle copying the entire directory efficiently
 			files = append(files, path)
@@ -145,7 +145,7 @@ func (fc *FileCopier) copyWithCOW(src, dest string) error {
 		// First try rsync for optimal performance
 		if hasCommand("rsync") {
 			// Use rsync with hard links and archive mode for maximum efficiency
-			cmd := exec.Command("rsync", "-aH", src+"/", dest)
+			cmd := exec.Command("rsync", "-aH", src, dest)
 			if err := cmd.Run(); err == nil {
 				return nil
 			}
