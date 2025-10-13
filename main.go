@@ -27,8 +27,9 @@ var (
 )
 
 type Config struct {
-	verbose bool
-	logger  *log.Logger
+	verbose             bool
+	excludeNodeModules  bool
+	logger              *log.Logger
 }
 
 type WorktreeManager struct {
@@ -38,8 +39,10 @@ type WorktreeManager struct {
 
 func main() {
 	var verbose bool
+	var excludeNodeModules bool
 	flag.BoolVar(&verbose, "v", false, "verbose output")
 	flag.BoolVar(&verbose, "verbose", false, "verbose output")
+	flag.BoolVar(&excludeNodeModules, "exclude-node-modules", false, "exclude node_modules directory from file copying")
 	flag.Usage = usage
 	flag.Parse()
 
@@ -51,6 +54,7 @@ func main() {
 
 	config := &Config{
 		verbose: verbose,
+		excludeNodeModules: excludeNodeModules,
 		logger:  log.New(os.Stderr, "", 0),
 	}
 
@@ -64,7 +68,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Print(`worktree [-v] <branch name>
+	fmt.Print(`worktree [-v] [--exclude-node-modules] <branch name>
 
 create a git worktree with <branch name>. Will create a worktree if one isn't
 found that matches the given name.
@@ -82,6 +86,9 @@ To set a global configuration for all repositories:
 
 If you have any custom configuration set, it will override the defaults
 completely, so add all files you want copied.
+
+Use --exclude-node-modules to skip copying node_modules directories, which can
+significantly speed up worktree creation for projects with large node_modules.
 `)
 }
 
